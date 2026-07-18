@@ -12,6 +12,7 @@ const providerError = document.querySelector('#providerError');
 let sessionProvider = null;
 let submitting = false;
 let lastOutput = '';
+let conversationId = null;
 
 function timeLabel() {
   return new Intl.DateTimeFormat([], { hour: 'numeric', minute: '2-digit' }).format(new Date());
@@ -145,7 +146,14 @@ function resetConversation() {
 }
 
 
-composer.addEventListener('submit', (e) => { e.preventDefault(); ask(input.value); });
+composer.addEventListener('submit', (e) => { 
+  e.preventDefault(); 
+  ask(input.value); 
+});
+
+sendButton.addEventListener('click', () => {
+  ask(input.value);
+});
 input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask(input.value); } });
 input.addEventListener('input', autoResize);
 document.querySelector('#newChat').addEventListener('click', resetConversation);

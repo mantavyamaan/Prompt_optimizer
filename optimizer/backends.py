@@ -40,7 +40,7 @@ class HTTPBackend:
     def __init__(self, base_url: str, model: str, api_key: str = "x") -> None:
         self.base_url = base_url.rstrip("/")
         self.model_tag = model
-        self._client = httpx.AsyncClient(timeout=60, headers={"Authorization": f"Bearer {api_key}"})
+        self._client = httpx.AsyncClient(timeout=600.0, headers={"Authorization": f"Bearer {api_key}"})
 
     async def generate(self, prompt: str, case_input: dict, expected: dict | None, gen_params) -> str:
         for attempt in range(4):

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0b1020" />
+    <title>Prompt Optimizer — Prompt Architect</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./polish.css" />
+  </head>
+  <body>
+    <div class="glow glow-one"></div><div class="glow glow-two"></div>
+    <main class="shell">
+      <aside class="sidebar" aria-label="Workspace navigation">
+        <a class="brand" href="/" aria-label="Prompt Optimizer home"><span class="brand-mark"><i></i><i></i><i></i></span>Prompt Optimizer</a>
+        <button class="new-chat" id="newChat" type="button"><span>+</span> New prompt <kbd>Ctrl K</kbd></button>
+        <nav class="workspace-nav"><p>WORKSPACE</p><button class="nav-link is-active" type="button"><span>✦</span> Prompt architect</button></nav>
+        <div class="sidebar-footer"><span class="privacy-dot"></span><span><b>Demo preview</b><small>Read-only mode</small></span><a href="https://github.com/mantavyamaan/Prompt_optimizer" target="_blank" style="text-decoration:none; color:inherit;" class="icon-button" aria-label="View on GitHub">★</a></div>
+      </aside>
+
+      <section class="workspace" aria-label="Prompt Architect">
+        <header class="topbar"><div><p class="eyebrow">YOUR PROMPT WORKSPACE</p><h1>Prompt <em>architect</em></h1></div><div class="top-actions"><button class="connection" id="providerButton" type="button"><span class="status-dot" id="statusDot"></span><span id="connectionText">Checking Ollama</span></button><button class="icon-button desktop-only" id="showInspector" type="button" aria-label="Show session details">◫</button></div></header>
+
+        <div class="conversation-scroll" id="chatScroll">
+          <section class="welcome" id="welcome">
+            <div class="orb" aria-hidden="true"><span></span></div><p class="eyebrow">PROMPT OPTIMIZER / PROMPT DESIGN</p><h2>Turn an idea into<br />a <em>great prompt.</em></h2>
+            <p class="welcome-copy">Describe the outcome you want. Prompt Optimizer creates a detailed, portable prompt for the LLM of your choice.</p>
+            <div class="suggestions">
+              <button class="suggestion" type="button" data-prompt="Create an original, production-ready multi-vendor marketplace with the discoverability and checkout capabilities users expect from leading marketplaces. I need the product plan, UI, backend architecture, and implementation steps."><span>01</span><b>Plan a marketplace</b><small>Get a complete build brief</small><i>→</i></button>
+              <button class="suggestion" type="button" data-prompt="Build a premium landing page for an AI-powered finance app. It should feel trustworthy, have a clear conversion path, and include the copy, UX flows, and technical requirements."><span>02</span><b>Design a product</b><small>Turn a concept into a brief</small><i>→</i></button>
+              <button class="suggestion" type="button" data-prompt="Create a robust prompt for an LLM to analyze customer feedback, find themes, identify product risks, and produce a prioritized action plan for a product team."><span>03</span><b>Analyze feedback</b><small>Create an expert workflow</small><i>→</i></button>
+            </div>
+          </section>
+          <section class="messages" id="messages" aria-live="polite"></section>
+
+        </div>
+
+        <footer class="composer-wrap"><form class="composer" id="composer"><textarea id="promptInput" rows="1" placeholder="Describe what you want an LLM to help you create…" aria-label="Message Prompt Optimizer"></textarea><div class="composer-bottom"><span class="input-hint"><kbd>Enter</kbd> send <span>·</span> <kbd>Shift Enter</kbd> line break</span><button class="send-button" id="sendButton" type="submit"><span>Generate prompt</span><b>↑</b></button></div></form><p class="disclaimer">Prompt Optimizer can make mistakes. Verify consequential information before relying on it.</p></footer>
+      </section>
+
+      <aside class="inspector" id="inspector"><div class="inspector-head"><p class="eyebrow">LIVE SESSION</p><button class="icon-button" id="closeInspector" type="button" aria-label="Hide session details">×</button></div><div class="model-card"><div class="model-glyph">✦</div><div><b id="modelName">Prompt Architect</b><small id="modelState">Checking local model…</small></div><span class="source-chip" id="sourceChip">OLLAMA</span></div><div class="metric-grid"><div><span>CONFIDENCE</span><b id="confidence">—</b></div><div><span>LATENCY</span><b id="latency">—</b></div></div><section class="trace-card"><div class="card-head"><p>LAST RESPONSE</p><button id="copyTrace" type="button">Copy ID</button></div><code id="trace">No response yet.</code></section><section class="session-note"><p>HOW IT WORKS</p><ol><li><span>01</span>Your intent is converted into a complete LLM prompt.</li><li><span>02</span>The selected model generates a copy-ready result.</li><li><span>03</span>Feedback is attached to the exact response you rate.</li></ol></section></aside>
+    </main>
+
+    <dialog class="provider-dialog" id="providerDialog" aria-labelledby="providerTitle"><form class="provider-sheet" id="providerForm" novalidate><div class="sheet-top"><div><p class="eyebrow">MODEL CONNECTION</p><h2 id="providerTitle">Choose your <em>provider.</em></h2></div><button class="icon-button" type="button" id="closeProvider" aria-label="Close model settings">×</button></div><button class="ollama-choice" type="button" id="ollamaChoice"><span class="choice-icon">O</span><span><b>Local Ollama</b><small>Default · llama3.1:latest</small></span><strong>DEFAULT</strong></button><div class="divider"><span>OR USE YOUR OWN API KEY</span></div><label>Compatible API base URL<input id="providerUrl" name="base_url" type="url" value="https://api.openai.com" placeholder="https://api.your-provider.com" /></label><label>Model<input id="providerModel" name="model" type="text" placeholder="Provider model name" /></label><label>API key<input id="providerKey" name="api_key" type="password" placeholder="Paste a key for this session" autocomplete="off" /></label><p class="form-error" id="providerError" role="alert" hidden></p><p class="key-note">Your key is held only in this tab’s memory, sent only for your request, and never stored by Prompt Optimizer.</p><div class="sheet-actions"><button class="text-button" type="button" id="clearProvider">Use Ollama instead</button><button class="primary-button" type="submit">Use API key <span>→</span></button></div></form></dialog>
+
+    <template id="messageTemplate"><article class="message"><div class="avatar" aria-hidden="true"></div><div class="message-main"><div class="message-meta"><b></b><time></time></div><pre></pre><div class="message-actions" hidden><div class="score-container" style="display:flex; align-items:center; gap:8px;"><input type="range" class="score-slider" min="0" max="100" value="50" style="flex:1;"><span class="score-display" style="min-width:24px; font-size:12px; opacity:0.8;">50</span><button class="score-submit" type="button" style="padding:4px 10px; font-size:12px; border-radius:4px;">Rate</button></div><button data-copy-response type="button">Copy</button></div></div></article></template>
+    <script src="./app.js"></script>
+  </body>
+</html>

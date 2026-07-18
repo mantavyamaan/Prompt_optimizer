@@ -6,23 +6,22 @@ It is not a foundation model or a training pipeline. It is the measurement, opti
 
 ## What it does
 
-1. Stores a prompt as independently versioned modules: role, context rules, output format, examples, and constraints.
-2. Evaluates each prompt against individually stored benchmark cases, not only a single aggregate score.
-3. Uses a stratified train / holdout / vault dataset split to avoid silently optimizing against the test set.
-4. Generates constrained prompt variants that can modify only one module at a time.
-5. Lets only the strongest training candidate access holdout evaluation.
-6. Requires a sequential confidence bound, quality fences, and a human review before a candidate can become the serving champion.
-7. Routes browser requests to the current champion and saves private traces plus optional user feedback.
+1. **Dynamic Synthetic Datasets**: Automatically generates its own adversarial edge cases in the background to continually expand its testing suite.
+2. **Genetic Crossover**: Cross-breeds the top prompt modules to create mathematically superior instructions over time.
+3. **Few-Shot Auto-Discovery**: Automatically searches for its hardest successes and injects them as perfect examples into future prompts.
+4. **Live A/B Testing**: Secretly routes a percentage of traffic to candidate prompts and scientifically A/B tests them using real-world user satisfaction.
+5. **Active Real-World Patching**: Detects actual queries that users scored poorly (e.g. < 50/100) and automatically generates new training data to patch those specific weaknesses.
+6. **Continuous Background Evolution**: A dedicated background loop constantly runs genetic optimization cycles, testing, and A/B promotion without any manual intervention.
 
 ## System at a glance
 
 | Layer | Purpose |
 | --- | --- |
-| Browser UI | Aesthetic chat interface for sending requests, seeing confidence/trace data, and leaving feedback. |
-| Serving plane | FastAPI endpoint that compiles the current champion prompt and calls the configured model backend. |
-| Evaluation plane | Deterministic per-case metrics, latency capture, run manifests, and idempotent SQLite persistence. |
-| Optimization plane | Train-only failure analysis, constrained prompt mutations, and a two-stage promotion gate. |
-| Safety plane | Holdout isolation, vault confirmation, hard quality fences, and manual deployment. |
+| Browser UI | Premium interface for sending requests, viewing traces, and giving 0-100 satisfaction scores. |
+| Serving plane | FastAPI endpoint that complies the current champion and handles shadow routing for A/B tests. |
+| Evaluation plane | Deterministic metrics, synthetic adversarial data generation, and SQLite persistence. |
+| Optimization plane | Genetic crossover mutation, few-shot auto-discovery, and continuous background loops. |
+| Safety plane | Holdout isolation, hard quality fences, and strict 85/100 average UI score required for A/B promotion. |
 
 ## Project layout
 

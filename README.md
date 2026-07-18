@@ -1,5 +1,7 @@
 # Prompt Optimizer Prompt Optimizer
 
+> **🌐 [Try the Live Demo →](https://mantavyamaan.github.io/Prompt_optimizer/docs/)**
+
 Prompt Optimizer is a local-first system for improving and serving task-specific LLM prompts with evidence instead of guesswork. Its browser experience is a **Prompt Architect**: describe an outcome and it returns a detailed, portable prompt you can paste into a capable LLM. The project also includes a separate structured-extraction benchmark used to exercise the optimization machinery.
 
 It is not a foundation model or a training pipeline. It is the measurement, optimization, and serving layer around a model you choose. By default it uses **local Ollama with `llama3.1:latest`**; a user can temporarily override that with their own OpenAI-compatible API key in the browser UI.

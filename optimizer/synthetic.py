@@ -86,6 +86,8 @@ Ensure variety. Do not include markdown backticks. Return ONLY the raw JSON arra
                     (case_id, category, dumps(case.get("input", {})), dumps(expected_dict), difficulty, split, "synthetic")
                 )
         print(f"Successfully generated and saved {len(cases)} synthetic cases to the database!")
+    except json.JSONDecodeError as e:
+        print(f"Skipping synthetic generation this cycle (LLM produced invalid JSON, will retry later): {e}")
     except Exception as e:
         print(f"Failed to generate synthetic data ({type(e).__name__}): {e}")
         if "ConnectError" in type(e).__name__:

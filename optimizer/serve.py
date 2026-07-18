@@ -144,7 +144,7 @@ async def query(request: Query):
         temporary_backend = HTTPBackend(request.provider.base_url, request.provider.model, request.provider.api_key)
         backend = temporary_backend
     try:
-        output = await backend.generate(compiled, {"text": request.text}, None, prompt.gen_params)
+        output = await backend.generate(compiled, {"text": request.text}, None, prompt.gen_params, priority=1)
     except Exception as exc:
         message = "The selected API provider could not be reached." if request.provider else (
             "Ollama is unavailable. Start Ollama and ensure llama3.1:latest is installed, then try again."

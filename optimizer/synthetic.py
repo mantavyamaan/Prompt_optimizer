@@ -87,7 +87,9 @@ Ensure variety. Do not include markdown backticks. Return ONLY the raw JSON arra
                 )
         print(f"Successfully generated and saved {len(cases)} synthetic cases to the database!")
     except Exception as e:
-        print(f"Failed to generate synthetic data: {e}")
+        print(f"Failed to generate synthetic data ({type(e).__name__}): {e}")
+        if "ConnectError" in type(e).__name__:
+            print(" -> Is Ollama running? Make sure to run 'ollama serve' in a separate terminal!")
 
 def generate_synthetic_cases(category: str, count: int = 20) -> None:
     asyncio.run(_run_generation(category, count))

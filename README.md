@@ -144,19 +144,26 @@ The seeded champion is designed to create robust prompts. Describe your desired 
 Create an original multi-vendor marketplace website with a polished shopping experience, seller onboarding, search, cart, checkout, order management, and an admin panel. I need a complete full-stack build plan and production-ready implementation guidance.
 ```
 
-## Run the optimizer
+## Continuous Background Evolution
 
-The following commands use the configured backend. With a running local Ollama model, they exercise the live local inference path; use the server-level provider settings above when you need another backend.
+The next-generation Prompt Optimizer is fully automated. When you start the web server (`uvicorn optimizer.serve:app`), a background task (`auto_evolve.py`) is launched that handles the entire optimization lifecycle automatically:
 
-### 1. Run one optimization cycle
+1. **Dataset Generation:** Automatically generates new synthetic adversarial edge cases if the dataset is small.
+2. **Genetic Optimization:** Runs cycles to analyze failures, generate one-module variants (including genetic crossovers), and evaluates them against the training split.
+3. **A/B Testing:** Candidates that pass the statistical train margin are flagged for shadow deployment. The router will send 10% of traffic to the candidate.
+4. **Auto-Promotion:** If real users rate the candidate with an average score of 85/100 or higher (over 5+ interactions), the candidate automatically dethrones the champion.
+
+You can simply use the UI normally while the system breeds and evolves better prompts in the background!
+
+## Manual CLI Controls
+
+If you prefer to manually step through the process, the original CLI commands are still available:
+
+### 1. Run one manual cycle
 
 ```powershell
 .\.venv\Scripts\python.exe -m optimizer.cli run
 ```
-
-The cycle evaluates the champion on the train split, analyzes **only train failures**, generates novel one-module variants, evaluates them on train, and permits only the best candidate to touch holdout data.
-
-If no candidate clears the 3-point train margin, the process stops before holdout evaluation. That is expected behavior, not an error.
 
 ### 2. Review proposed candidates
 
@@ -164,7 +171,7 @@ If no candidate clears the 3-point train margin, the process stops before holdou
 .\.venv\Scripts\python.exe -m optimizer.cli review
 ```
 
-Review candidate mutation notes and any proposal that passed the statistical gate. A proposal is not automatically deployed.
+Review candidate mutation notes and any proposal that passed the statistical gate. A proposal is not automatically deployed unless it wins the A/B test.
 
 ### 3. Promote a reviewed candidate
 

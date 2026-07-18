@@ -106,6 +106,8 @@ async function ask(rawText) {
   setSubmitting(true);
   const typing = addTyping();
   const started = performance.now();
+  const body = { text };
+  if (sessionProvider) body.provider = sessionProvider;
   try {
     const response = await fetch('/query', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     const data = await response.json();
@@ -147,4 +149,59 @@ function resetConversation() {
   document.querySelector('#trace').textContent = 'No response yet.';
   input.focus();
 }
+
+composer.addEventListener('submit', (e) => {
+  e.preventDefault();
+  ask(input.value);
+});
+
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    ask(input.value);
+  }
+});
+
+input.addEventListener('input', autoResize);
+
+document.querySelector('#newChat').addEventListener('click', resetConversation);
+
+document.querySelectorAll('.suggestion').forEach(btn => {
+  btn.addEventListener('click', () => ask(btn.dataset.prompt));
+});
+
+document.querySelector('#openProviderFromSide')?.addEventListener('click', () => providerDialog.showModal());
+document.querySelector('#closeProvider')?.addEventListener('click', () => providerDialog.close());
+document.querySelector('#clearProvider')?.addEventListener('click', () => {
+  sessionProvider = null;
+  providerDialog.close();
+  refreshHealth();
+});
+
+if (providerForm) {
+  providerForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const formData = new FormData(providerForm);
+    const url = formData.get('base_url');
+    const model = formData.get('model');
+    const key = formData.get('api_key');
+    if (!url || !model) {
+      providerError.textContent = 'Base URL and Model are required.';
+      providerError.hidden = false;
+      return;
+    }
+    providerError.hidden = true;
+    sessionProvider = { url, model, key };
+    providerDialog.close();
+    refreshHealth();
+  });
+}
+
+document.querySelector('#ollamaChoice')?.addEventListener('click', () => {
+  sessionProvider = null;
+  providerDialog.close();
+  refreshHealth();
+});
+
+refreshHealth();
 

@@ -1,0 +1,8 @@
+.shell.inspector-hidden{grid-template-columns:238px minmax(0,1fr)}
+.inspector[hidden]{display:none}
+.trace-row span{display:block;white-space:pre-line;margin-top:4px}
+.trace-row{width:100%;text-align:left;cursor:pointer}.trace-row:hover{border-color:rgba(129,211,255,.46);background:rgba(33,49,80,.32)}
+html,body{height:100%;min-height:0;overflow:hidden}.shell{height:100vh;height:100dvh;min-height:0;overflow:hidden}.workspace{height:100%;min-height:0;overflow:hidden;grid-template-rows:auto minmax(0,1fr) auto}.sidebar,.inspector{height:100%;min-height:0;overflow:auto}.conversation-scroll{height:100%;min-height:0;overflow-x:hidden;overflow-y:auto}.composer-wrap{min-height:0;flex:none;padding:10px 32px 12px}.composer{padding:10px 14px 8px}.composer textarea{max-height:110px}.disclaimer{margin:6px 0 0}.welcome{padding:clamp(34px,7vh,76px) 25px 30px}
+@media(max-height:820px){.topbar{height:82px;padding:17px 32px 13px}.welcome{padding-top:34px;padding-bottom:22px}.welcome .orb{width:45px;height:45px;margin-bottom:18px}.welcome h2{font-size:clamp(34px,4vw,49px)}.welcome-copy{margin:15px 0 21px}.suggestion{min-height:94px}.suggestion b{margin-top:8px}.composer-wrap{padding-top:8px;padding-bottom:9px}.disclaimer{display:none}}
+@media(max-width:720px){.shell{height:100svh;height:100dvh}.workspace{height:100%}.composer-wrap{padding:9px 12px 10px}.welcome{padding:36px 19px 22px}.suggestion{min-height:86px}}
+@media(max-width:1120px){.shell.inspector-hidden{grid-template-columns:220px minmax(0,1fr)}}

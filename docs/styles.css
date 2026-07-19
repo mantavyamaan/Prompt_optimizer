@@ -85,6 +85,92 @@ body {
 }
 ::-webkit-scrollbar-thumb {
   background: rgba(255,255,255,0.1);
+
+/* Premium Aesthetics */
+:root {
+  --sans: "Inter", "DM Sans", sans-serif;
+  --serif: "Outfit", "Playfair Display", serif;
+  --mono: "Fira Code", "DM Mono", monospace;
+}
+
+body {
+  background: radial-gradient(circle at top left, #0d1326 0%, #070a14 100%);
+}
+
+.glow {
+  filter: blur(140px);
+  opacity: 0.25;
+  animation: pulse-glow 8s infinite alternate ease-in-out;
+}
+.glow-one {
+  background: #6366f1;
+}
+.glow-two {
+  background: #ec4899;
+}
+
+@keyframes pulse-glow {
+  0% { transform: scale(1) translate(0, 0); }
+  100% { transform: scale(1.1) translate(2vw, 2vw); }
+}
+
+.sidebar, .inspector, .composer-wrap, .composer {
+  background: rgba(13, 19, 38, 0.4) !important;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.composer:focus-within {
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2) !important;
+  border-color: rgba(99, 102, 241, 0.6) !important;
+}
+
+.suggestion {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(10px);
+}
+
+.suggestion:hover {
+  transform: translateY(-4px) scale(1.02) !important;
+  border-color: rgba(236, 72, 153, 0.5) !important;
+  background: rgba(236, 72, 153, 0.1) !important;
+  box-shadow: 0 10px 30px -10px rgba(236, 72, 153, 0.3);
+}
+
+.message pre {
+  background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01)) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.message.user pre {
+  background: linear-gradient(145deg, rgba(99, 102, 241, 0.15), rgba(99, 102, 241, 0.05)) !important;
+  border: 1px solid rgba(99, 102, 241, 0.3) !important;
+}
+
+.send-button {
+  background: linear-gradient(135deg, #6366f1, #a855f7) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+}
+
+.send-button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.02);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -92,3 +178,129 @@ body {
 }
 
 .message-actions[hidden] { display: none !important; }
+
+/* Mobile Premium Responsive Alignments */
+@media (max-width: 768px) {
+  body {
+    overflow: hidden !important;
+  }
+  
+  .shell {
+    display: flex !important;
+    flex-direction: column;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+  }
+  
+  .workspace {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    display: grid !important;
+    grid-template-rows: auto minmax(0, 1fr) auto !important;
+  }
+  
+  .topbar {
+    padding: 14px 16px !important;
+    height: auto !important;
+  }
+  
+  .topbar h1 {
+    font-size: 20px !important;
+  }
+  
+  .welcome {
+    padding: 30px 16px 20px !important;
+    text-align: center;
+  }
+  
+  .welcome-copy, .orb {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .welcome h2 {
+    font-size: 32px !important;
+  }
+  
+  .suggestions {
+    display: flex !important;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .suggestion {
+    min-height: auto !important;
+    padding: 16px !important;
+  }
+  
+  .messages {
+    padding: 16px 12px 20px !important;
+  }
+  
+  .message pre {
+    font-size: 12px !important;
+    padding: 12px !important;
+  }
+  
+  .message-actions {
+    flex-wrap: wrap;
+    gap: 8px !important;
+  }
+  
+  .score-container {
+    width: 100%;
+    margin-bottom: 4px;
+  }
+  
+  .composer-wrap {
+    padding: 10px 12px 14px !important;
+    background: rgba(10, 15, 30, 0.95) !important;
+  }
+  
+  .composer {
+    padding: 12px !important;
+  }
+  
+  .composer-bottom {
+    margin-top: 10px !important;
+  }
+  
+  .send-button {
+    width: 100%;
+    justify-content: center;
+    padding: 10px !important;
+  }
+  
+  .send-button span {
+    display: inline !important;
+    font-size: 13px !important;
+  }
+  
+  .disclaimer {
+    font-size: 9px !important;
+    margin-top: 8px !important;
+  }
+  
+  .provider-dialog {
+    width: 92vw !important;
+    margin: auto;
+  }
+  
+  .provider-sheet {
+    padding: 24px !important;
+  }
+  
+  .sheet-top h2 {
+    font-size: 22px !important;
+  }
+  
+  .sheet-actions {
+    flex-direction: column-reverse;
+    gap: 12px;
+  }
+  
+  .sheet-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+}

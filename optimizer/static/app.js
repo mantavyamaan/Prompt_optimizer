@@ -42,8 +42,8 @@ function addMessage(content, author, options = {}) {
   node.querySelector('time').textContent = timeLabel();
   node.querySelector('pre').textContent = content;
   const actions = node.querySelector('.message-actions');
-  actions.hidden = !options.traceId;
   if (options.traceId) {
+    actions.hidden = false;
     const slider = node.querySelector('.score-slider');
     const display = node.querySelector('.score-display');
     const submitBtn = node.querySelector('.score-submit');
@@ -52,6 +52,8 @@ function addMessage(content, author, options = {}) {
         submitBtn.addEventListener('click', () => submitScore(node, slider.value, submitBtn));
     }
     node.querySelector('[data-copy-response]').addEventListener('click', () => copyText(content, node.querySelector('[data-copy-response]')));
+  } else {
+    actions.remove();
   }
   messages.append(node);
   scrollToEnd();

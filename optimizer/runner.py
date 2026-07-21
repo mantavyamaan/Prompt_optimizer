@@ -31,7 +31,7 @@ def open_manifest(model_tag: str, category: str, split: str) -> RunManifest:
         compiler_sha=compiler_sha,
         # evaluator_sha tracks evaluator code separately from compiler code.
         evaluator_sha=hashlib.sha256(
-            json.dumps(sorted(EVALUATORS.get(category, [])), default=str).encode()
+            json.dumps(sorted(f.__name__ for f in EVALUATORS.get(category, [])), default=str).encode()
         ).hexdigest()[:8],
     )
     with conn() as connection:

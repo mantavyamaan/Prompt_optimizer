@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./polish.css" />
+    <link rel="icon" href="data:," />
   </head>
   <body>
     <div class="glow glow-one"></div><div class="glow glow-two"></div>
@@ -47,6 +48,6 @@
     <dialog class="provider-dialog" id="providerDialog" aria-labelledby="providerTitle"><form class="provider-sheet" id="providerForm" novalidate><div class="sheet-top"><div><p class="eyebrow">MODEL CONNECTION</p><h2 id="providerTitle">Choose your <em>provider.</em></h2></div><button class="icon-button" type="button" id="closeProvider" aria-label="Close model settings">×</button></div><button class="ollama-choice" type="button" id="ollamaChoice"><span class="choice-icon">O</span><span><b>Local Ollama</b><small>Default · llama3.1:latest</small></span><strong>DEFAULT</strong></button><div class="divider"><span>OR USE YOUR OWN API KEY</span></div><label>Compatible API base URL<input id="providerUrl" name="base_url" type="url" value="https://api.openai.com" placeholder="https://api.your-provider.com" /></label><label>Model<input id="providerModel" name="model" type="text" placeholder="Provider model name" /></label><label>API key<input id="providerKey" name="api_key" type="password" placeholder="Paste a key for this session" autocomplete="off" /></label><p class="form-error" id="providerError" role="alert" hidden></p><p class="key-note">Your key is held only in this tab’s memory, sent only for your request, and never stored by Prompt Optimizer.</p><div class="sheet-actions"><button class="text-button" type="button" id="clearProvider">Use Ollama instead</button><button class="primary-button" type="submit">Use API key <span>→</span></button></div></form></dialog>
 
     <template id="messageTemplate"><article class="message"><div class="avatar" aria-hidden="true"></div><div class="message-main"><div class="message-meta"><b></b><time></time></div><pre></pre><div class="message-actions" hidden><div class="score-container" style="display:flex; align-items:center; gap:8px;"><input type="range" class="score-slider" min="0" max="100" value="50" style="flex:1;"><span class="score-display" style="min-width:24px; font-size:12px; opacity:0.8;">50</span><button class="score-submit" type="button" style="padding:4px 10px; font-size:12px; border-radius:4px;">Rate</button></div><button data-copy-response type="button">Copy</button></div></div></article></template>
-    <script src="./app.js?v=2"></script>
+    <script src="./app.js?v=3"></script>
   </body>
 </html>

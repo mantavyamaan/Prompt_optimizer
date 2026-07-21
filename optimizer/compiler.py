@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 import hashlib
 import subprocess
 
@@ -32,12 +33,20 @@ def compile_prompt(modules: PromptModules, variables: dict[str, object]) -> str:
 
 
 def compiled_hash(modules: PromptModules) -> str:
-    canonical = "\x1f".join(getattr(modules, name) for name in modules.model_fields)
+    # Always use MODULE_NAMES ordering (not model_fields) for consistency with diff().
+    from .models import MODULE_NAMES
+    canonical = "\x1f".join(getattr(modules, name) for name in MODULE_NAMES)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:16]
 
 
+@functools.lru_cache(maxsize=1)
 def code_sha() -> str:
+    """Return the current git commit SHA (cached — git is spawned only once)."""
     try:
-        return subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], text=True, stderr=subprocess.DEVNULL).strip()
+        return subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
     except Exception:
         return "nogit"

@@ -3,10 +3,9 @@ import json
 import uuid
 import random
 import re
-from typing import Any
 from .db import conn, dumps
 from .models import GenParams
-from .serve import build_backend
+
 
 def get_failed_real_queries(category: str, limit: int = 5) -> list[str]:
     with conn() as connection:
@@ -17,7 +16,7 @@ def get_failed_real_queries(category: str, limit: int = 5) -> list[str]:
             WHERE t.category = ? AND f.signal LIKE 'score:%'
             ORDER BY RANDOM() LIMIT 20
         """, (category,)).fetchall()
-        
+
     failed = []
     for row in rows:
         try:
@@ -28,9 +27,30 @@ def get_failed_real_queries(category: str, limit: int = 5) -> list[str]:
             pass
     return failed[:limit]
 
-async def _run_generation(category: str, count: int) -> None:
-    backend = build_backend()
-    
+
+def _validate_synthetic_case(case: dict) -> bool:
+    """Return True only if the LLM-generated case has meaningful content."""
+    if not isinstance(case, dict):
+        return False
+    input_data = case.get("input")
+    expected_data = case.get("expected")
+    if not isinstance(input_data, dict) or not input_data:
+        return False
+    if not isinstance(expected_data, dict) or not expected_data:
+        return False
+    return True
+
+
+async def _run_generation(category: str, count: int, backend=None) -> None:
+    """Generate synthetic benchmark cases using the LLM.
+
+    backend: an HTTPBackend instance to reuse. If None, a new one is created
+             (only for backward-compat CLI use; prefer passing the shared backend).
+    """
+    if backend is None:
+        from .serve import build_backend
+        backend = build_backend()
+
     failed_queries = get_failed_real_queries(category)
     failure_context = ""
     if failed_queries:
@@ -46,28 +66,31 @@ Return ONLY a valid JSON array of objects. Each object must have:
 
 Ensure variety. Do not include markdown backticks. Return ONLY the raw JSON array.
 """
-    
+
     print(f"Asking LLM to generate {count} synthetic cases for '{category}'...")
-    
+
     try:
         output = await backend.generate(prompt, {}, None, GenParams(temperature=0.8, max_tokens=4000))
-        
-        # Clean the output if it contains markdown formatting
-        if output.strip().startswith("```"):
-            output = re.sub(r"^```(?:json)?\s*|\s*```$", "", output.strip(), flags=re.I)
-            
+
+        # Strip markdown fences if present.
+        output = re.sub(r"```(?:json)?\s*", "", output, flags=re.I).strip()
+
         cases = json.loads(output)
-        
+
         if not isinstance(cases, list):
             raise ValueError("LLM did not return a JSON array.")
-            
+
+        valid_cases = [c for c in cases if _validate_synthetic_case(c)]
+        skipped = len(cases) - len(valid_cases)
+        if skipped:
+            print(f"Skipped {skipped} malformed case(s) from LLM output.")
+
         with conn() as connection:
-            for case in cases:
+            for case in valid_cases:
                 difficulty = case.get("difficulty", "hard")
                 if difficulty not in ("routine", "hard", "adversarial"):
                     difficulty = "hard"
-                
-                # Split roughly 60% train, 20% holdout, 20% vault
+
                 r = random.random()
                 if r < 0.6:
                     split = "train"
@@ -75,23 +98,34 @@ Ensure variety. Do not include markdown backticks. Return ONLY the raw JSON arra
                     split = "holdout"
                 else:
                     split = "vault"
-                    
+
                 case_id = f"synth-{uuid.uuid4().hex[:8]}"
-                
-                # We expect the evaluator for extraction to look at expected["json"]
                 expected_dict = {"json": case.get("expected", {})}
-                
+
                 connection.execute(
                     "INSERT INTO benchmark_cases(case_id,category,input,expected,difficulty,split,source) VALUES(?,?,?,?,?,?,?)",
-                    (case_id, category, dumps(case.get("input", {})), dumps(expected_dict), difficulty, split, "synthetic")
+                    (case_id, category, dumps(case.get("input", {})), dumps(expected_dict), difficulty, split, "synthetic"),
                 )
-        print(f"Successfully generated and saved {len(cases)} synthetic cases to the database!")
+
+        print(f"Successfully generated and saved {len(valid_cases)} synthetic cases to the database!")
+
     except json.JSONDecodeError as e:
         print(f"Skipping synthetic generation this cycle (LLM produced invalid JSON, will retry later): {e}")
     except Exception as e:
         print(f"Failed to generate synthetic data ({type(e).__name__}): {e}")
         if "ConnectError" in type(e).__name__:
-            print(" -> Is Ollama running? Make sure to run 'ollama serve' in a separate terminal!")
+            print(" -> Is Ollama running? Make sure Ollama is serving on port 11434!")
+
 
 def generate_synthetic_cases(category: str, count: int = 20) -> None:
-    asyncio.run(_run_generation(category, count))
+    """Sync wrapper for CLI use. Safe to call outside an event loop only."""
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = None
+
+    if loop and loop.is_running():
+        # Already in an async context — schedule as a task.
+        loop.create_task(_run_generation(category, count))
+    else:
+        asyncio.run(_run_generation(category, count))

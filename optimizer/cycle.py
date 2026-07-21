@@ -7,10 +7,16 @@ from .generator import apply_cooldown, generate_variants, log
 from .models import GateVerdict
 from .runner import load_cases, load_prompt, open_manifest, per_case_scores, run_benchmark
 
+# Minimum vault delta to consider a candidate an improvement.
+VAULT_MIN_DELTA = 0.005
+
 
 async def nightly_cycle(backend, category: str = "extraction") -> GateVerdict | None:
     with conn() as connection:
-        row = connection.execute("SELECT prompt_id FROM prompts WHERE category=? AND status='champion'", (category,)).fetchone()
+        row = connection.execute(
+            "SELECT prompt_id FROM prompts WHERE category=? AND status='champion'",
+            (category,),
+        ).fetchone()
     if row is None:
         return None
     champion = load_prompt(row["prompt_id"])
@@ -23,18 +29,30 @@ async def nightly_cycle(backend, category: str = "extraction") -> GateVerdict | 
     themes, exemplars = analyze_failures(category, champion.prompt_id, champion_manifest.run_id)
     variants = generate_variants(champion, themes, exemplars)
     if not variants:
-        return GateVerdict(challenger_id="-", champion_id=champion.prompt_id, stage="generation", promote=False, train_delta=0, note="No novel variants were generated")
+        return GateVerdict(
+            challenger_id="-", champion_id=champion.prompt_id, stage="generation",
+            promote=False, train_delta=0, note="No novel variants were generated",
+        )
     train_scores: dict[str, dict[str, float]] = {}
     for variant in variants:
         manifest = open_manifest(backend.model_tag, category, "train")
         await run_benchmark(backend, manifest.run_id, variant, train)
         train_scores[variant.prompt_id] = per_case_scores(manifest.run_id, variant.prompt_id)
-    verdict = await run_gate(backend, category, champion.prompt_id, [variant.prompt_id for variant in variants], train_scores, champion_scores)
+    verdict = await run_gate(
+        backend, category, champion.prompt_id,
+        [variant.prompt_id for variant in variants],
+        train_scores, champion_scores,
+    )
     if verdict.promote:
         with conn() as connection:
-            connection.execute("""INSERT INTO promotions(promotion_id,category,old_champion,new_champion,holdout_delta,ci_low,ci_high,vault_confirmed)
-                VALUES(?,?,?,?,?,?,?,NULL)""", (new_id("proposal"), category, champion.prompt_id, verdict.challenger_id,
-                 verdict.holdout_delta, verdict.ci_low, verdict.ci_high))
+            connection.execute(
+                """INSERT INTO promotions(promotion_id,category,old_champion,new_champion,holdout_delta,ci_low,ci_high,vault_confirmed)
+                VALUES(?,?,?,?,?,?,?,NULL)""",
+                (
+                    new_id("proposal"), category, champion.prompt_id, verdict.challenger_id,
+                    verdict.holdout_delta, verdict.ci_low, verdict.ci_high,
+                ),
+            )
         log(category, "-", "-", "-", "review_pending", verdict.train_delta)
     else:
         apply_cooldown(verdict.challenger_id)
@@ -45,7 +63,9 @@ async def nightly_cycle(backend, category: str = "extraction") -> GateVerdict | 
 def promote(category: str, prompt_id: str) -> None:
     """Deploy only after a human review. Promotion invalidates the serving cache."""
     with conn() as connection:
-        candidate = connection.execute("SELECT category FROM prompts WHERE prompt_id=?", (prompt_id,)).fetchone()
+        candidate = connection.execute(
+            "SELECT category FROM prompts WHERE prompt_id=?", (prompt_id,)
+        ).fetchone()
         if candidate is None or candidate["category"] != category:
             raise KeyError("candidate does not exist in the requested category")
         connection.execute("UPDATE prompts SET status='retired' WHERE category=? AND status='champion'", (category,))
@@ -58,15 +78,25 @@ async def vault_check(backend, category: str, champion_id: str, candidate_id: st
     """A post-review guardrail. Vault data is never used to choose a candidate."""
     champion, candidate = load_prompt(champion_id), load_prompt(candidate_id)
     vault = load_cases(category, "vault")
-    champion_manifest, candidate_manifest = open_manifest(backend.model_tag, category, "vault"), open_manifest(backend.model_tag, category, "vault")
+    champion_manifest = open_manifest(backend.model_tag, category, "vault")
+    candidate_manifest = open_manifest(backend.model_tag, category, "vault")
     await run_benchmark(backend, champion_manifest.run_id, champion, vault)
     await run_benchmark(backend, candidate_manifest.run_id, candidate, vault)
-    old, new = per_case_scores(champion_manifest.run_id, champion_id), per_case_scores(candidate_manifest.run_id, candidate_id)
+    old = per_case_scores(champion_manifest.run_id, champion_id)
+    new = per_case_scores(candidate_manifest.run_id, candidate_id)
     from .stats import paired_deltas
     deltas, wins, losses, ties = paired_deltas(old, new)
     delta = sum(deltas) / len(deltas) if deltas else 0
+    # Require a positive delta (not just zero) to confirm a vault promotion.
+    should_promote = delta > VAULT_MIN_DELTA
     with conn() as connection:
-        connection.execute("UPDATE promotions SET vault_confirmed=? WHERE category=? AND old_champion=? AND new_champion=?", (int(delta >= 0), category, champion_id, candidate_id))
-    return GateVerdict(challenger_id=candidate_id, champion_id=champion_id, stage="vault", promote=delta >= 0, train_delta=0,
-                       holdout_delta=delta, n_holdout=len(deltas), wins=wins, losses=losses, ties=ties,
-                       note="Vault regression check passed" if delta >= 0 else "Vault regression detected; roll back")
+        connection.execute(
+            "UPDATE promotions SET vault_confirmed=? WHERE category=? AND old_champion=? AND new_champion=?",
+            (int(should_promote), category, champion_id, candidate_id),
+        )
+    return GateVerdict(
+        challenger_id=candidate_id, champion_id=champion_id, stage="vault",
+        promote=should_promote, train_delta=0,
+        holdout_delta=delta, n_holdout=len(deltas), wins=wins, losses=losses, ties=ties,
+        note="Vault regression check passed" if should_promote else "Vault regression detected; roll back",
+    )

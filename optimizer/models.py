@@ -112,6 +112,11 @@ class GateVerdict(BaseModel):
 
     @model_validator(mode="after")
     def promotion_needs_evidence(self) -> "GateVerdict":
-        if self.promote and (self.stage != "sequential" or self.ci_low is None or self.ci_low <= 0):
-            raise ValueError("a promotion requires a positive sequential confidence bound")
+        """
+        A promotion via the sequential gate requires a positive CI lower bound.
+        Vault confirmations (stage='vault') are allowed to promote based on delta alone.
+        """
+        if self.promote and self.stage == "sequential":
+            if self.ci_low is None or self.ci_low <= 0:
+                raise ValueError("a sequential promotion requires a positive sequential confidence bound")
         return self

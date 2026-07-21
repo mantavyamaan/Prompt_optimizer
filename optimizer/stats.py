@@ -34,11 +34,32 @@ def sign_test(wins: int, losses: int) -> float:
     return min(1.0, 2 * tail)
 
 
-def minimum_detectable_effect(n: int, sample_variance: float, alpha: float = ALPHA, power: float = 0.8) -> float:
+def minimum_detectable_effect(
+    n: int,
+    sample_variance: float,
+    alpha: float = ALPHA,
+    power: float = 0.8,
+) -> float:
+    """Minimum detectable effect using normal approximation.
+
+    This is a transparent diagnostic; it is not used as a promotion criterion.
+    """
     if n <= 0:
         return float("inf")
-    # Normal approximation; transparent diagnostic, not used as a promotion criterion.
-    return (1.96 + 0.84) * math.sqrt(2 * max(sample_variance, 1e-9) / n)
+    # Z-scores derived from alpha and power (not hardcoded).
+    z_alpha = _z_score(1 - alpha / 2)
+    z_power = _z_score(power)
+    return (z_alpha + z_power) * math.sqrt(2 * max(sample_variance, 1e-9) / n)
+
+
+def _z_score(p: float) -> float:
+    """Rational approximation of the inverse normal CDF (Abramowitz & Stegun 26.2.17)."""
+    p = max(1e-9, min(1 - 1e-9, p))
+    t = math.sqrt(-2 * math.log(min(p, 1 - p)))
+    c = (2.515517, 0.802853, 0.010328)
+    d = (1.432788, 0.189269, 0.001308)
+    approx = t - (c[0] + c[1] * t + c[2] * t ** 2) / (1 + d[0] * t + d[1] * t ** 2 + d[2] * t ** 3)
+    return approx if p >= 0.5 else -approx
 
 
 def paired_deltas(champion: dict[str, float], challenger: dict[str, float]) -> tuple[list[float], int, int, int]:
